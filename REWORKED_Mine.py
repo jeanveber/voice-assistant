@@ -5,14 +5,17 @@ engine = pyttsx3.init()
 voices = engine.getProperty('voices')
 engine.setProperty('voice', voices[2].id)
 glaDOSname="GlaDOS"
+myname="query"
+
 def speak(audioString):#say text
-    print(glaDOSname,':',audioString)
+    #print(glaDOSname,':',audioString)
+    print("{}: {}".format(glaDOSname,audioString))
     engine.say(audioString)
     engine.runAndWait()
 
 def getQuery():#get text
     data=""
-    data=input("query: ")
+    data=input("{}: ".format(myname))
     return(data)
 
 def getNews():
@@ -131,9 +134,15 @@ def brawlstars():
     speak(brawlstars_char[random_brawler])
 
 def wolframA():
-    speak("Sure. Wolfram initiated. Please, repeat your question.")
-    import wolframalpha 
-    question = input('Question: ') 
+    global questionWolf
+    if questionWolf == "":
+        question=data
+    else:
+        question=questionWolf
+        
+    speak("I'm thinking, please wait a bit")
+    import wolframalpha
+    
     app_id = '3G7H4A-A83G9LY4G6'
     client = wolframalpha.Client(app_id) 
     res = client.query(question)
@@ -145,9 +154,28 @@ def gamePong():
     module=importlib.import_module("pong", package=None)
     importlib.reload(module)
 
-def GladosMain(data):#main process
+def changeMyName():
+    global dataOrig
+    global myname
+    yourName=[]
+    yourName=dataOrig.split()
+    myname=yourName[-1]
+    speak(myname)
+    speak("Sure. I guess that's your name now")
 
-    data = str.lower(data)#takes care of lower and upper case
+def changeHerName():
+    global dataOrig
+    global glaDOSname
+    glaDOSname1=[]
+    glaDOSname1=dataOrig.split()
+    glaDOSname=glaDOSname1[-1]
+    speak(glaDOSname)
+    speak("Sure. I guess that's my new name now")
+
+def GladosMain(data):#main process
+    global dataOrig
+    dataOrig = data
+    data=str.lower(data)
 
     if "how are you" in data or "how are you?" in data:
         speak("I am fine")
@@ -175,20 +203,30 @@ def GladosMain(data):#main process
     elif 'wikipedia' in data or 'wiki' in data:
         wikipedia()
 
-    elif 'compute' in data or 'ask question' in data or 'do you know' in data or 'wolfram' in data:
+    elif 'compute' in data or 'do you know' in data or 'wolfram' in data or 'i have a question' in data or 'ask you a question' in data:
+        global questionWolf
+        speak("Sure. I'll try my best to answer. What is your question?")
+        questionWolf=input("{}: ".format(myname))
         wolframA()
 
     elif "news" in data:#apiKey=6f7902d95ff74002ac01a5d90cbf7477' from newsapi.
         getNews()
 
     elif "your name is" in data:
-        speak("Sure, what is my name again?")
-        global glaDOSname
-        glaDOSname=input("query:")
+        changeHerName()
 
+    elif "call me" in data or "my name is" in data:
+        changeMyName()
+        
+    elif "say my name" in data:
+        speak(myname)
+
+    elif "say your name" in data:
+        speak(glaDOSname)
+    
     else:
-        speak("I'm sorry, I couldn't understand you. Please, repeat your query")
-
+    #    speak("I'm sorry, I couldn't understand you. Please, repeat your query")
+        wolframA()
 
 
 
@@ -200,6 +238,7 @@ speak("Hello! What can I do for you?")
 
 mainLoopChk=True
 while mainLoopChk:
+    questionWolf=""#not to answer the same question
     data=getQuery()
     GladosMain(data)
 
